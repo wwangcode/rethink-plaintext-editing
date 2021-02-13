@@ -6,9 +6,11 @@ import classNames from 'classnames';
 
 import { listFiles } from '../files';
 
-// Used below, these need to be registered
 import MarkdownEditor from '../MarkdownEditor';
 import PlaintextEditor from '../components/PlaintextEditor';
+import JavascriptEditor from '../JavascriptEditor'
+import JSONEditor from '../JSONEditor'
+import Previewer from '../components/Previewer'
 
 import IconPlaintextSVG from '../public/icon-plaintext.svg';
 import IconMarkdownSVG from '../public/icon-markdown.svg';
@@ -76,49 +78,39 @@ FilesTable.propTypes = {
   setActiveFile: PropTypes.func
 };
 
-function Previewer({ file }) {
-  const [value, setValue] = useState('');
 
-  useEffect(() => {
-    (async () => {
-      setValue(await file.text());
-    })();
-  }, [file]);
-
-  return (
-    <div className={css.preview}>
-      <div className={css.title}>{path.basename(file.name)}</div>
-      <div className={css.content}>{value}</div>
-    </div>
-  );
-}
-
-Previewer.propTypes = {
-  file: PropTypes.object
-};
-
-// Uncomment keys to register editors for media types
 const REGISTERED_EDITORS = {
-  // "text/plain": PlaintextEditor,
-  // "text/markdown": MarkdownEditor,
+  "text/plain": PlaintextEditor,
+  "text/markdown": MarkdownEditor,
+  "text/javascript": JavascriptEditor,
+  "application/json": JSONEditor,
 };
 
 function PlaintextFilesChallenge() {
   const [files, setFiles] = useState([]);
   const [activeFile, setActiveFile] = useState(null);
+  const [preview, setPreview] = useState(true)
 
   useEffect(() => {
     const files = listFiles();
     setFiles(files);
   }, []);
 
-  const write = file => {
+  useEffect(() => {
+    setPreview(true)
+  }, [activeFile])
+
+  const write = async (file) => {
     console.log('Writing soon... ', file.name);
 
-    // TODO: Write the file to the `files` array
+    const updatedFiles = files.map(prev => prev.name === file.name ? file : prev)
+    setFiles(updatedFiles)
   };
 
   const Editor = activeFile ? REGISTERED_EDITORS[activeFile.type] : null;
+  const togglePreview = () => {
+    setPreview(!preview)
+  }
 
   return (
     <div className={css.page}>
@@ -157,8 +149,11 @@ function PlaintextFilesChallenge() {
       <main className={css.editorWindow}>
         {activeFile && (
           <>
-            {Editor && <Editor file={activeFile} write={write} />}
-            {!Editor && <Previewer file={activeFile} />}
+            {Editor && (preview ? 
+              <Previewer file={activeFile} editor={Editor} togglePreview={togglePreview} preview={preview}/> 
+              : <Editor togglePreview={togglePreview} preview={preview} file={activeFile} write={write} />
+            )}
+            {!Editor && <Previewer file={activeFile} editor={Editor}/>}
           </>
         )}
 
@@ -171,3 +166,4 @@ function PlaintextFilesChallenge() {
 }
 
 export default PlaintextFilesChallenge;
+

@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components'
-import path from 'path';
+import path from 'path'
 import axios from 'axios'
 
 import css from './style.css';
 
-// file is ActiveFile, write is function to update files 
-function PlaintextEditor({ file, write, togglePreview, preview }) {
+function JSONEditor({ file, write, togglePreview, preview }) {
   const [ fileText, setFileText ] = useState()
   const [ exportMessage, setExportMessage ] = useState('')
 
   useEffect(() => {
     (async () => {
-      setFileText(await file.text());
-    })();
+      if (file) {
+        setFileText(await file.text());
+      }
+    })()
   }, [file]);
 
   const handleTextInput = (e) => {
@@ -40,28 +41,26 @@ function PlaintextEditor({ file, write, togglePreview, preview }) {
   }
 
   return (
-    <>
-      <div className={css.editor}>
-        <div className={css.title}>
+    <div className={css.editor}>
+      <div className={css.title}>
           {path.basename(file.name)}
           <ButtonContainer>
             <EditButton onClick={togglePreview}>{preview ? 'Edit' : 'Preview'}</EditButton>
             <ExportButton onClick={saveFile}>Export</ExportButton>
           </ButtonContainer>
-        </div>
-        <TextInput value={fileText} onChange={handleTextInput}/>
-        {exportMessage !== '' && (<ExportMessage>{exportMessage}</ExportMessage>)}
       </div>
-    </>
+      <TextInput value={fileText} onChange={handleTextInput}/>
+      {exportMessage !== '' && (<ExportMessage>{exportMessage}</ExportMessage>)}
+    </div>
   );
 }
 
-PlaintextEditor.propTypes = {
+JSONEditor.propTypes = {
   file: PropTypes.object,
   write: PropTypes.func
 };
 
-export default PlaintextEditor;
+export default JSONEditor;
 
 
 // STYLED COMPONENTS
@@ -77,7 +76,7 @@ const EditButton = styled.div`
   color: black;
   cursor: pointer;
   &:hover {
-    background-color: rgba(127, 255, 212, .8);
+    background-color: rgba(187, 134, 252, .8);
   }
 `;
 
@@ -93,7 +92,7 @@ const ExportButton = styled.div`
   color: black;
   cursor: pointer;
   &:hover {
-    background-color: rgba(187, 134, 252, .8);
+    background-color: rgba(127, 255, 212, .8);
   }
 `;
 
